@@ -36,7 +36,7 @@ def generate_possible_prime(bits: int = 1024):
 
 
 def generate_prime(bits: int = 1024):
-    while not is_prime(n := generate_possible_prime()):
+    while not is_prime(n := generate_possible_prime(bits)):
         pass
     return n
     
