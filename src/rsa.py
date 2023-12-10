@@ -1,9 +1,12 @@
 from utility import euler_totient_function, extended_gcd
 from prime_generator import generate_prime
-from padding import pkcs1_pad, pkcs1_unpad
+from padding import pad, unpad
 from dataclasses import dataclass
 from typing import Tuple
 import sys
+
+
+PADDING_LENGTH = 11
 
 
 @dataclass
@@ -19,7 +22,7 @@ class PublicKey:
         ciphertext = b""
         for block_start in range(0, len(text_bytes), block_length):
             text_block = text_bytes[block_start: block_start + block_length]
-            padded_block = pkcs1_pad(text_block, self.key_length // 8)
+            padded_block = pad(text_block, self.key_length // 8)
             numerical_block = int.from_bytes(padded_block, "big")
 
             ciphertext_block = pow(numerical_block, self.e, self.n).to_bytes(self.key_length // 8, "big")
@@ -43,7 +46,7 @@ class PrivateKey:
             numerical_block = int.from_bytes(ciphertext_block, "big")
 
             text_block = pow(numerical_block, self.d, self.n).to_bytes(self.key_length // 8, "big")
-            unpadded_block = pkcs1_unpad(text_block)
+            unpadded_block = unpad(text_block)
             text_bytes += unpadded_block
 
         text = text_bytes.decode()
@@ -65,7 +68,5 @@ def generate_key_pair(key_length: int = 2048, e: int = 65537) -> Tuple[PublicKey
 
 if __name__ == "__main__":
     public_key, private_key = generate_key_pair(1024)
-    ciphertext = public_key.encrypt("Hello World. This is a sample piece of text, which I am going to use to encrypt and decrypt, using the RSA encryption algorithm. This is a project, which I intend to upload on my github, to expand my portfolio to show to later employers or universities.")
-    print(ciphertext)
-    text = private_key.decrypt(ciphertext)
-    print(text)
+    encrypted_data = public_key.encrypt("This is some testing text.")
+    decrypted_data = private_key.decrypt(encrypted_data)
